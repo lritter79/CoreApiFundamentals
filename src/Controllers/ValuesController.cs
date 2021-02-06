@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,13 +8,16 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CoreCodeCamp.Controllers
 {
-  [Route("api/[controller]")]
-  public class ValuesController
-  {
-
-    public string[] Get()
+    //[controller] converts to the word that comes before "Controller" in the class name 
+    [Route("api/[controller]")]
+    public class CampsController : ControllerBase
     {
-      return new[] { "Hello", "From","Pluralsight" };
+
+        //HttpGetAttribute 
+        public Object Get()
+        {
+            //return an anonymous object
+            return new { Moniker = "ATL2018", Name = "Atll code camp" };
+        }
     }
-  }
 }
