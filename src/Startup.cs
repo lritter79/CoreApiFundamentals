@@ -18,6 +18,7 @@ namespace CoreCodeCamp
   {
     public void ConfigureServices(IServiceCollection services)
     {
+            //the reposity is added to services so we can use it accross classes
       services.AddDbContext<CampContext>();
       services.AddScoped<ICampRepository, CampRepository>();
 
