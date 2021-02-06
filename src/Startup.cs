@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using CoreCodeCamp.Data;
 using Microsoft.AspNetCore.Builder;
@@ -21,6 +22,10 @@ namespace CoreCodeCamp
             //the reposity is added to services so we can use it accross classes
       services.AddDbContext<CampContext>();
       services.AddScoped<ICampRepository, CampRepository>();
+            //add auto mapper
+            //it needs a profile
+            //says go look for profile classes on startup that derive from profile
+            services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
       services.AddControllers();
     }
