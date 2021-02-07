@@ -11,7 +11,8 @@ namespace CoreCodeCamp.Data
     {
         public SpeakerProfile() 
         {
-            this.CreateMap<Speaker, SpeakerModel>();
+            this.CreateMap<Speaker, SpeakerModel>()
+                .ReverseMap();
         }       
     }
 }

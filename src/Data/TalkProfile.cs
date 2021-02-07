@@ -12,7 +12,8 @@ namespace CoreCodeCamp.Data
         public TalkProfile()
         {
             this.CreateMap<Talk, TalkModel>()
-                .ForMember(a => a.Speaker, f => f.MapFrom(v => v.Speaker));
+                .ForMember(a => a.Speaker, f => f.MapFrom(v => v.Speaker))
+                .ReverseMap();
         }
             
             
