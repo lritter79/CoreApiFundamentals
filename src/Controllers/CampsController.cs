@@ -8,6 +8,7 @@ using CoreCodeCamp.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
+using Microsoft.AspNetCore.Routing;
 
 namespace CoreCodeCamp.Controllers
 {
@@ -15,15 +16,20 @@ namespace CoreCodeCamp.Controllers
     //route + verb is how you get an action
     //the action is the end point
     [Route("api/[controller]")]
+    //[ApiController] tell the program we're using it as an API and adjust its expectation accordingly, so we're not returning views or html
+    [ApiController]
     public class CampsController : ControllerBase
     {
         private readonly ICampRepository _repository;
         private readonly IMapper _mapper;
+        private readonly LinkGenerator _linkGenerator;
 
-        public CampsController(ICampRepository repository, IMapper mapper)
+        public CampsController(ICampRepository repository, IMapper mapper, LinkGenerator linkGenerator)
         {
             _repository = repository;
             _mapper = mapper;
+            _linkGenerator = linkGenerator;
+
         }
 
         [HttpGet("search")]
@@ -136,6 +142,90 @@ namespace CoreCodeCamp.Controllers
 
 
         /// 
+        //from body tells it to map request from its body
+        public async Task<ActionResult<CampModel>> Post([FromBody]CampModel model)
+        {
+            try
+            {
+                //validation done on the model to make sure it doenst already exist
+                var existing = await _repository.GetCampAsync(model.Moniker);
+                if (existing != null)
+                {
+                    return BadRequest("Moniker in use");
+                }
 
+
+                //return the uri for the new camp w/out hard coding
+                //name of the action, controler, and route values as new object with an anonymous type to store moniker to use get by moniker
+                var location = _linkGenerator.GetPathByAction("Get", "Camps", new{ moniker = model.Moniker });
+                if (String.IsNullOrWhiteSpace(location))
+                {
+                    return BadRequest("Coundnt set current moniker");
+                }
+
+                var camp = _mapper.Map<Camp>(model);
+                _repository.Add(camp);
+                
+                if(await _repository.SaveChangesAsync())
+                {
+                    return Created($"/api/camps/{camp.Moniker}", _mapper.Map<CampModel>(camp));
+                }
+                return Ok();
+            }
+            catch(Exception)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return BadRequest();
+        }
+
+        //put for rpelacing whole object as oppsoed to individual field
+        [HttpPut("{moniker}")]
+        public async Task<ActionResult<CampModel>> Put(string moniker, CampModel model)
+        {
+            try
+            {
+                var oldCamp = await _repository.GetCampAsync(model.Moniker);
+                if (oldCamp == null) return NotFound($"Cound not find camp with moniker of {moniker}");
+
+                //oldCamp.Name = model.Name;
+                _mapper.Map(model, oldCamp);
+
+                if (await _repository.SaveChangesAsync())
+                {
+                    return _mapper.Map<CampModel>(oldCamp);
+                }
+            }
+            catch (Exception)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Database failed");
+            }
+
+            return BadRequest();
+        }
+
+        [HttpDelete("{moniker}")]
+        public async Task<IActionResult> Delete(string moniker)
+        {
+            try
+            {
+                var oldCamp = await _repository.GetCampAsync(moniker);
+                if (oldCamp == null) return NotFound($"Cound not find camp with moniker of {moniker}");
+
+                _repository.Delete(oldCamp);
+
+                if (await _repository.SaveChangesAsync())
+                {
+                    return Ok();
+                }
+            }
+            catch (Exception)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Delete failed");
+            }
+
+            return BadRequest();
+        }
     }
 }

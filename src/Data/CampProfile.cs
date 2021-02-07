@@ -20,7 +20,8 @@ namespace CoreCodeCamp.Data
                 .ForMember(c => c.Venue, o =>
                 ////.MapFrom() = "where is this actually coming from?"
                 o.MapFrom(m => m.Location.VenueName))
-                .ForMember(c => c.Talks, o => o.MapFrom(m => m.Talks));
+                .ForMember(c => c.Talks, o => o.MapFrom(m => m.Talks))
+                .ReverseMap();
 
             
         }
